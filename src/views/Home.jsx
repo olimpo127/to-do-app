@@ -23,7 +23,7 @@ import {
   useDisclosure,
   SimpleGrid,
   Wrap,
-  WrapItem 
+  WrapItem,
 } from "@chakra-ui/react";
 import Navbar from "../components/Navbar";
 
@@ -41,6 +41,10 @@ const ToDoList = () => {
   const [categoryFilter, setCategoryFilter] = useState(""); // Filtro de categoría
   const [startDateFilter, setStartDateFilter] = useState(""); // Fecha de inicio
   const [endDateFilter, setEndDateFilter] = useState(""); // Fecha de fin
+  const [collapsedTasks, setCollapsedTasks] = useState(
+    tasks.reduce((acc, task) => ({ ...acc, [task.id]: true }), {})
+  );
+
   const [editTaskData, setEditTaskData] = useState({
     task: "",
     description: "",
@@ -58,6 +62,12 @@ const ToDoList = () => {
   const auth = getAuth();
   const navigate = useNavigate();
   const user = auth.currentUser;
+
+  useEffect(() => {
+    setCollapsedTasks(
+      tasks.reduce((acc, task) => ({ ...acc, [task.id]: true }), {})
+    );
+  }, [tasks]);
 
   useEffect(() => {
     if (!user) {
@@ -272,6 +282,13 @@ const ToDoList = () => {
     onEditClose();
   };
 
+  const toggleCollapse = (taskId) => {
+    setCollapsedTasks((prev) => ({
+      ...prev,
+      [taskId]: !prev[taskId], // Toggle only the clicked task
+    }));
+  };
+
   if (loading) return <Text>Loading...</Text>;
 
   return (
@@ -403,49 +420,65 @@ const ToDoList = () => {
       </Modal>
 
       <Heading size="lg">Today's Tasks</Heading>
-{todayTasks.length > 0 ? (
-  <Wrap spacing={4} justify="start" width="100%">
-    {todayTasks.map((taskItem) => (
-      <WrapItem key={taskItem.id}>
-        <Box
-          borderWidth="1px"
-          borderRadius="lg"
-          padding={4}
-          bg={taskItem.checkbox ? "green.200" : "white"}
-          width="100%"
-          minWidth="250px"
-        >
-          <Heading size="md">{taskItem.task}</Heading>
-          <Text>{taskItem.description}</Text>
-          <Heading size="sm">{taskItem.category}</Heading>
-          <Text>{taskItem.date}</Text>
-          <Text>{taskItem.time || "Sin tiempo"}</Text>
-          <Stack direction="row" alignItems="center">
-            <Checkbox
-              isChecked={taskItem.checkbox}
-              onChange={() => toggleTaskCompletion(taskItem.id)}
-            >
-              Status
-            </Checkbox>
-            <Button
-              colorScheme="yellow"
-              onClick={() => startEditing(taskItem.id)}
-            >
-              Edit
-            </Button>
-            <Button colorScheme="red" onClick={() => deleteTask(taskItem.id)}>
-              Delete
-            </Button>
-          </Stack>
-        </Box>
-      </WrapItem>
-    ))}
-  </Wrap>
-) : (
-  <Box>No tasks for today.</Box>
-)}
-
-
+      {todayTasks.length > 0 ? (
+        <Wrap spacing={4} justify="start" width="100%">
+          {todayTasks.map((taskItem) => (
+            <WrapItem key={taskItem.id}>
+              <Box
+                borderWidth="1px"
+                borderRadius="lg"
+                padding={4}
+                bg={taskItem.checkbox ? "green.200" : "white"}
+                width="100%"
+                minWidth="250px"
+                cursor="pointer"
+                onClick={() => toggleCollapse(taskItem.id)}
+              >
+                <Heading size="md">{taskItem.task}</Heading>
+                {!collapsedTasks[taskItem.id] && (
+                  <>
+                    <Text>{taskItem.description}</Text>
+                    <Heading size="sm">{taskItem.category}</Heading>
+                    <Text>{taskItem.date}</Text>
+                    <Text>{taskItem.time || "Sin tiempo"}</Text>
+                    <Stack direction="row" alignItems="center">
+                      <Checkbox
+                        isChecked={taskItem.checkbox}
+                        onChange={(e) => {
+                          e.stopPropagation(); // Prevent collapsing when interacting with checkbox
+                          toggleTaskCompletion(taskItem.id);
+                        }}
+                      >
+                        Status
+                      </Checkbox>
+                      <Button
+                        colorScheme="yellow"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent collapsing when clicking Edit
+                          startEditing(taskItem.id);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        colorScheme="red"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent collapsing when clicking Delete
+                          deleteTask(taskItem.id);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </>
+                )}
+              </Box>
+            </WrapItem>
+          ))}
+        </Wrap>
+      ) : (
+        <Box>No tasks for today.</Box>
+      )}
 
       {/* Input fields for the task */}
       <Box
@@ -510,39 +543,58 @@ const ToDoList = () => {
 
       {/* Tomorrow's Tasks */}
       <Heading size="lg">Tomorrow's Tasks</Heading>
-{tomorrowTasks.length > 0 ? (
-  <Wrap spacing={4}>
+      {tomorrowTasks.length > 0 ? (
+  <Wrap spacing={4} justify="start" width="100%">
     {tomorrowTasks.map((taskItem) => (
       <WrapItem key={taskItem.id}>
         <Box
           borderWidth="1px"
           borderRadius="lg"
           padding={4}
-          marginBottom={4}
           bg={taskItem.checkbox ? "green.200" : "white"}
+          width="100%"
+          minWidth="250px"
+          cursor="pointer"
+          onClick={() => toggleCollapse(taskItem.id)}
         >
           <Heading size="md">{taskItem.task}</Heading>
-          <Text>{taskItem.description}</Text>
-          <Heading size="sm">{taskItem.category}</Heading>
-          <Text>{taskItem.date}</Text>
-          <Text>{taskItem.time || "Sin tiempo"}</Text>
-          <Stack direction="row" alignItems="center">
-            <Checkbox
-              isChecked={taskItem.checkbox}
-              onChange={() => toggleTaskCompletion(taskItem.id)}
-            >
-              Status
-            </Checkbox>
-            <Button
-              colorScheme="yellow"
-              onClick={() => startEditing(taskItem.id)}
-            >
-              Edit
-            </Button>
-            <Button colorScheme="red" onClick={() => deleteTask(taskItem.id)}>
-              Delete
-            </Button>
-          </Stack>
+          {!collapsedTasks[taskItem.id] && (
+            <>
+              <Text>{taskItem.description}</Text>
+              <Heading size="sm">{taskItem.category}</Heading>
+              <Text>{taskItem.date}</Text>
+              <Text>{taskItem.time || "Sin tiempo"}</Text>
+              <Stack direction="row" alignItems="center">
+                <Checkbox
+                  isChecked={taskItem.checkbox}
+                  onChange={(e) => {
+                    e.stopPropagation(); // Evita colapsar al hacer clic en el checkbox
+                    toggleTaskCompletion(taskItem.id);
+                  }}
+                >
+                  Status
+                </Checkbox>
+                <Button
+                  colorScheme="yellow"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evita colapsar al hacer clic en Editar
+                    startEditing(taskItem.id);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  colorScheme="red"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evita colapsar al hacer clic en Eliminar
+                    deleteTask(taskItem.id);
+                  }}
+                >
+                  Delete
+                </Button>
+              </Stack>
+            </>
+          )}
         </Box>
       </WrapItem>
     ))}
@@ -550,6 +602,7 @@ const ToDoList = () => {
 ) : (
   <Box>No tasks for tomorrow.</Box>
 )}
+
 
       {/* Upcoming Tasks */}
       <Heading size="lg">Upcoming Tasks</Heading>
@@ -581,42 +634,63 @@ const ToDoList = () => {
       </Box>
 
       {filteredRestTasks.length > 0 ? (
-        filteredRestTasks.map((taskItem) => (
-          <Box
-            key={taskItem.id}
-            borderWidth="1px"
-            borderRadius="lg"
-            padding={4}
-            marginBottom={4}
-            bg={taskItem.checkbox ? "green.200" : "white"}
-          >
-            <Heading size="md">{taskItem.task}</Heading>
-            <Text>{taskItem.description}</Text>
-            <Heading size="sm">{taskItem.category}</Heading>
-            <Text>{taskItem.date}</Text>
-            <Text>{taskItem.time || "Sin hora fijada"}</Text>
-            <Stack direction="row" alignItems="center">
-              <Checkbox
-                isChecked={taskItem.checkbox}
-                onChange={() => toggleTaskCompletion(taskItem.id)}
-              >
-                Status
-              </Checkbox>
-              <Button
-                colorScheme="yellow"
-                onClick={() => startEditing(taskItem.id)}
-              >
-                Edit
-              </Button>
-              <Button colorScheme="red" onClick={() => deleteTask(taskItem.id)}>
-                Delete
-              </Button>
-            </Stack>
-          </Box>
-        ))
-      ) : (
-        <Box>No upcoming tasks.</Box>
+  filteredRestTasks.map((taskItem) => (
+    <Box
+      key={taskItem.id}
+      borderWidth="1px"
+      borderRadius="lg"
+      padding={4}
+      marginBottom={4}
+      bg={taskItem.checkbox ? "green.200" : "white"}
+      width="100%"
+      minWidth="250px"
+      cursor="pointer"
+      onClick={() => toggleCollapse(taskItem.id)}
+    >
+      <Heading size="md">{taskItem.task}</Heading>
+      {!collapsedTasks[taskItem.id] && (
+        <>
+          <Text>{taskItem.description}</Text>
+          <Heading size="sm">{taskItem.category}</Heading>
+          <Text>{taskItem.date}</Text>
+          <Text>{taskItem.time || "Sin hora fijada"}</Text>
+          <Stack direction="row" alignItems="center">
+            <Checkbox
+              isChecked={taskItem.checkbox}
+              onChange={(e) => {
+                e.stopPropagation(); // Evita colapsar al hacer clic en el checkbox
+                toggleTaskCompletion(taskItem.id);
+              }}
+            >
+              Status
+            </Checkbox>
+            <Button
+              colorScheme="yellow"
+              onClick={(e) => {
+                e.stopPropagation(); // Evita colapsar al hacer clic en Editar
+                startEditing(taskItem.id);
+              }}
+            >
+              Edit
+            </Button>
+            <Button
+              colorScheme="red"
+              onClick={(e) => {
+                e.stopPropagation(); // Evita colapsar al hacer clic en Eliminar
+                deleteTask(taskItem.id);
+              }}
+            >
+              Delete
+            </Button>
+          </Stack>
+        </>
       )}
+    </Box>
+  ))
+) : (
+  <Box>No upcoming tasks.</Box>
+)}
+
     </VStack>
   );
 };
