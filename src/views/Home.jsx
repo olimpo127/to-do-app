@@ -431,10 +431,15 @@ const ToDoList = () => {
                 bg={taskItem.checkbox ? "green.200" : "white"}
                 width="100%"
                 minWidth="250px"
-                cursor="pointer"
-                onClick={() => toggleCollapse(taskItem.id)}
               >
-                <Heading size="md">{taskItem.task}</Heading>
+                {/* Sección específica para activar toggleCollapse */}
+                <Box
+                  cursor="pointer"
+                  onClick={() => toggleCollapse(taskItem.id)}
+                >
+                  <Heading size="md">{taskItem.task}</Heading>
+                </Box>
+
                 {!collapsedTasks[taskItem.id] && (
                   <>
                     <Text>{taskItem.description}</Text>
@@ -445,7 +450,7 @@ const ToDoList = () => {
                       <Checkbox
                         isChecked={taskItem.checkbox}
                         onChange={(e) => {
-                          e.stopPropagation(); // Prevent collapsing when interacting with checkbox
+                          e.stopPropagation(); // Evita que el colapso se active
                           toggleTaskCompletion(taskItem.id);
                         }}
                       >
@@ -454,7 +459,7 @@ const ToDoList = () => {
                       <Button
                         colorScheme="yellow"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent collapsing when clicking Edit
+                          e.stopPropagation();
                           startEditing(taskItem.id);
                         }}
                       >
@@ -463,7 +468,7 @@ const ToDoList = () => {
                       <Button
                         colorScheme="red"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent collapsing when clicking Delete
+                          e.stopPropagation();
                           deleteTask(taskItem.id);
                         }}
                       >
@@ -544,65 +549,69 @@ const ToDoList = () => {
       {/* Tomorrow's Tasks */}
       <Heading size="lg">Tomorrow's Tasks</Heading>
       {tomorrowTasks.length > 0 ? (
-  <Wrap spacing={4} justify="start" width="100%">
-    {tomorrowTasks.map((taskItem) => (
-      <WrapItem key={taskItem.id}>
-        <Box
-          borderWidth="1px"
-          borderRadius="lg"
-          padding={4}
-          bg={taskItem.checkbox ? "green.200" : "white"}
-          width="100%"
-          minWidth="250px"
-          cursor="pointer"
-          onClick={() => toggleCollapse(taskItem.id)}
-        >
-          <Heading size="md">{taskItem.task}</Heading>
-          {!collapsedTasks[taskItem.id] && (
-            <>
-              <Text>{taskItem.description}</Text>
-              <Heading size="sm">{taskItem.category}</Heading>
-              <Text>{taskItem.date}</Text>
-              <Text>{taskItem.time || "Sin tiempo"}</Text>
-              <Stack direction="row" alignItems="center">
-                <Checkbox
-                  isChecked={taskItem.checkbox}
-                  onChange={(e) => {
-                    e.stopPropagation(); // Evita colapsar al hacer clic en el checkbox
-                    toggleTaskCompletion(taskItem.id);
-                  }}
+        <Wrap spacing={4} justify="start" width="100%">
+          {tomorrowTasks.map((taskItem) => (
+            <WrapItem key={taskItem.id}>
+              <Box
+                borderWidth="1px"
+                borderRadius="lg"
+                padding={4}
+                bg={taskItem.checkbox ? "green.200" : "white"}
+                width="100%"
+                minWidth="250px"
+              >
+                {/* Sección específica para colapsar */}
+                <Box
+                  cursor="pointer"
+                  onClick={() => toggleCollapse(taskItem.id)}
                 >
-                  Status
-                </Checkbox>
-                <Button
-                  colorScheme="yellow"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Evita colapsar al hacer clic en Editar
-                    startEditing(taskItem.id);
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  colorScheme="red"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Evita colapsar al hacer clic en Eliminar
-                    deleteTask(taskItem.id);
-                  }}
-                >
-                  Delete
-                </Button>
-              </Stack>
-            </>
-          )}
-        </Box>
-      </WrapItem>
-    ))}
-  </Wrap>
-) : (
-  <Box>No tasks for tomorrow.</Box>
-)}
+                  <Heading size="md">{taskItem.task}</Heading>
+                </Box>
 
+                {!collapsedTasks[taskItem.id] && (
+                  <>
+                    <Text>{taskItem.description}</Text>
+                    <Heading size="sm">{taskItem.category}</Heading>
+                    <Text>{taskItem.date}</Text>
+                    <Text>{taskItem.time || "Sin tiempo"}</Text>
+                    <Stack direction="row" alignItems="center">
+                      <Checkbox
+                        isChecked={taskItem.checkbox}
+                        onChange={(e) => {
+                          e.stopPropagation(); // Evita colapsar al interactuar con el checkbox
+                          toggleTaskCompletion(taskItem.id);
+                        }}
+                      >
+                        Status
+                      </Checkbox>
+                      <Button
+                        colorScheme="yellow"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Evita colapsar al hacer clic en Editar
+                          startEditing(taskItem.id);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        colorScheme="red"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Evita colapsar al hacer clic en Eliminar
+                          deleteTask(taskItem.id);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Stack>
+                  </>
+                )}
+              </Box>
+            </WrapItem>
+          ))}
+        </Wrap>
+      ) : (
+        <Box>No tasks for tomorrow.</Box>
+      )}
 
       {/* Upcoming Tasks */}
       <Heading size="lg">Upcoming Tasks</Heading>
@@ -634,63 +643,62 @@ const ToDoList = () => {
       </Box>
 
       {filteredRestTasks.length > 0 ? (
-  filteredRestTasks.map((taskItem) => (
-    <Box
-      key={taskItem.id}
-      borderWidth="1px"
-      borderRadius="lg"
-      padding={4}
-      marginBottom={4}
-      bg={taskItem.checkbox ? "green.200" : "white"}
-      width="100%"
-      minWidth="250px"
-      cursor="pointer"
-      onClick={() => toggleCollapse(taskItem.id)}
-    >
-      <Heading size="md">{taskItem.task}</Heading>
-      {!collapsedTasks[taskItem.id] && (
-        <>
-          <Text>{taskItem.description}</Text>
-          <Heading size="sm">{taskItem.category}</Heading>
-          <Text>{taskItem.date}</Text>
-          <Text>{taskItem.time || "Sin hora fijada"}</Text>
-          <Stack direction="row" alignItems="center">
-            <Checkbox
-              isChecked={taskItem.checkbox}
-              onChange={(e) => {
-                e.stopPropagation(); // Evita colapsar al hacer clic en el checkbox
-                toggleTaskCompletion(taskItem.id);
-              }}
-            >
-              Status
-            </Checkbox>
-            <Button
-              colorScheme="yellow"
-              onClick={(e) => {
-                e.stopPropagation(); // Evita colapsar al hacer clic en Editar
-                startEditing(taskItem.id);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              colorScheme="red"
-              onClick={(e) => {
-                e.stopPropagation(); // Evita colapsar al hacer clic en Eliminar
-                deleteTask(taskItem.id);
-              }}
-            >
-              Delete
-            </Button>
-          </Stack>
-        </>
+        filteredRestTasks.map((taskItem) => (
+          <Box
+            key={taskItem.id}
+            borderWidth="1px"
+            borderRadius="lg"
+            padding={4}
+            marginBottom={4}
+            bg={taskItem.checkbox ? "green.200" : "white"}
+            width="100%"
+            minWidth="250px"
+            cursor="pointer"
+            onClick={() => toggleCollapse(taskItem.id)}
+          >
+            <Heading size="md">{taskItem.task}</Heading>
+            {!collapsedTasks[taskItem.id] && (
+              <>
+                <Text>{taskItem.description}</Text>
+                <Heading size="sm">{taskItem.category}</Heading>
+                <Text>{taskItem.date}</Text>
+                <Text>{taskItem.time || "Sin hora fijada"}</Text>
+                <Stack direction="row" alignItems="center">
+                  <Checkbox
+                    isChecked={taskItem.checkbox}
+                    onChange={(e) => {
+                      e.stopPropagation(); // Evita colapsar al hacer clic en el checkbox
+                      toggleTaskCompletion(taskItem.id);
+                    }}
+                  >
+                    Status
+                  </Checkbox>
+                  <Button
+                    colorScheme="yellow"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evita colapsar al hacer clic en Editar
+                      startEditing(taskItem.id);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    colorScheme="red"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evita colapsar al hacer clic en Eliminar
+                      deleteTask(taskItem.id);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
+              </>
+            )}
+          </Box>
+        ))
+      ) : (
+        <Box>No upcoming tasks.</Box>
       )}
-    </Box>
-  ))
-) : (
-  <Box>No upcoming tasks.</Box>
-)}
-
     </VStack>
   );
 };
